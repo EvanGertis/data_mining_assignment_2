@@ -4,6 +4,8 @@
 
 # use the Assignment 2--Training set to extract rules and test the quality of the extracted rules against the Assignment 2-- Test set for ID3.
 
+# leaf generated from the decision tree.
+F1 = 0
 
 # define c1 count of records w/ dominant class in F1
 # How do I determine the number of records w/ dominant class in F1?
@@ -53,7 +55,9 @@ fp = 0
 
 # use the assignment 2-- training set for Bayes as the training set to classify the records of the assignment 2 test set for bayes
 
-# calculate the accuracy
+
+
+# calculate the accuracy, error rate, sensitivity, specificity, and precision for the selected classifier in reference to the corresponding test set.
 
 accuracy = tp + tn /(p+n)
 
