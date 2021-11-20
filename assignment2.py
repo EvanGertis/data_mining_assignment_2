@@ -34,59 +34,12 @@ def isNotUnique(s):
     a = s.to_numpy() # s.values (pandas<0.24)
     return not (a[0] == a).all()
 
-def ID3(threshold,g):
-    # use the training set to predict the test set.
-    # use the Assignment 2--Training set to extract rules and test the quality of the extracted rules against the Assignment 2-- Test set for ID3.
-    test_set = pd.read_csv("Assignment 2--Test set for ID3.csv")
-    training_set = pd.read_csv("Assignment 2--Training set for ID3.csv")
+def BayesClassifier():
+    # use the assignment 2-- training set for Bayes as the training set to classify the records of the assignment 2 test set for bayes
+    test_set = pd.read_csv("Assignment 2--Test set for Bayes.csv")
+    training_set = pd.read_csv("Assignment 2--Training set for Bayes.csv")
 
-    print('***********************************')
-    print('TRAINING SET')
-    print(training_set)
-    print('***********************************')
-
-
-    print('***********************************')
-    print('TEST SET')
-    print(test_set)
-    print('***********************************')
-
-    print(f'test_set: {test_set}')
-    print(f'training_set: {training_set}')
-
-    # Step 1- Calculate MC (Message Conveyed) for the given data set in reference to the class attribute
-    print(f'Step 1- Calculate MC (Message Conveyed) for the given data set in reference to the class attribute')
-    # MC = -p1*log2(p1) - p2*log2(p2)
-    # For n classes MC = -p1log2(p1) - p2*log2(p2)-...-pn*log2(pn)
-
-    # For each column calculate the gain.
-    numberOfColumns = 0
-    mcDictionary = {}
-    print('***********************************')
-    print('For each column calculate the gain.')
-    for (columnName, columnData) in training_set.iteritems():
-        messageConveyed = mc(columnName,training_set)
-        mcDictionary.update({columnName:round(messageConveyed)})
-        numberOfColumns+=1
-    print('***********************************')
-    print(f'numberOfColumns {numberOfColumns}')
-    print(f'mcDictionary {mcDictionary}')
-    
-    
-    # The column with the highest gain is the root.
-    print(f'The column with the highest gain is the root.')
-    values = mcDictionary.values()
-    max_value = max(values)
-    print(f'The max value is {max_value}')
-    # print(f'The max value, {max_value}, is associated with column {columnWithMaximumInformationGain}')
-    val_list = list(values)
-    columnWithMaximumInformationGain = list(mcDictionary.keys())[list(mcDictionary.values()).index(max_value)]
-    print(f'The max value, {max_value}, is associated with column {columnWithMaximumInformationGain}')
-
-    # select the max value from the gain array
-    # this is the new root
-    root =  training_set[columnWithMaximumInformationGain]
-    print(f'root {root}')   
+def ID3(columnName,threshold,g):
 
     # Loop
     # Step 2 - Repeat for every attribute
@@ -223,20 +176,19 @@ def ID3(threshold,g):
         gain = messageConveyed-wmc1
         print(f"wmc2 : {wmc2}")
         print(f"gain for branch 2 of {columnName} is {gain}")
-        
-        if(columnName == 'Venue'):
-            exit()
 
         # Step 3- Repeat for each split produced by the root
         # if all records have the same class then break. 
         if(isNotUnique(df1[columnName])):
-            break
+            return
 
         if(isNotUnique(df2[columnName])):
-            break
-
+            return
+        
         # Step 4- If every split is free of a mixture of class values, then stop
         # expansion of the tree
+
+        ID3(columnName,threshold,g)
 
         # # How do we apply prepruning to the data?
         # # For post-pruning use the criteria below
@@ -259,11 +211,59 @@ def ID3(threshold,g):
 
     # calculate_metrics(tp, tn, p, n, fp)
 
-def BayesClassifier():
-    # use the assignment 2-- training set for Bayes as the training set to classify the records of the assignment 2 test set for bayes
-    test_set = pd.read_csv("Assignment 2--Test set for Bayes.csv")
-    training_set = pd.read_csv("Assignment 2--Training set for Bayes.csv")
 
+# use the training set to predict the test set.
+# use the Assignment 2--Training set to extract rules and test the quality of the extracted rules against the Assignment 2-- Test set for ID3.
+test_set = pd.read_csv("Assignment 2--Test set for ID3.csv")
+training_set = pd.read_csv("Assignment 2--Training set for ID3.csv")
+
+print('***********************************')
+print('TRAINING SET')
+print(training_set)
+print('***********************************')
+
+
+print('***********************************')
+print('TEST SET')
+print(test_set)
+print('***********************************')
+
+print(f'test_set: {test_set}')
+print(f'training_set: {training_set}')
+
+# Step 1- Calculate MC (Message Conveyed) for the given data set in reference to the class attribute
+print(f'Step 1- Calculate MC (Message Conveyed) for the given data set in reference to the class attribute')
+# MC = -p1*log2(p1) - p2*log2(p2)
+# For n classes MC = -p1log2(p1) - p2*log2(p2)-...-pn*log2(pn)
+
+# For each column calculate the gain.
+numberOfColumns = 0
+mcDictionary = {}
+print('***********************************')
+print('For each column calculate the gain.')
+for (columnName, columnData) in training_set.iteritems():
+    messageConveyed = mc(columnName,training_set)
+    mcDictionary.update({columnName:round(messageConveyed)})
+    numberOfColumns+=1
+print('***********************************')
+print(f'numberOfColumns {numberOfColumns}')
+print(f'mcDictionary {mcDictionary}')
+
+
+# The column with the highest gain is the root.
+print(f'The column with the highest gain is the root.')
+values = mcDictionary.values()
+max_value = max(values)
+print(f'The max value is {max_value}')
+# print(f'The max value, {max_value}, is associated with column {columnWithMaximumInformationGain}')
+val_list = list(values)
+columnWithMaximumInformationGain = list(mcDictionary.keys())[list(mcDictionary.values()).index(max_value)]
+print(f'The max value, {max_value}, is associated with column {columnWithMaximumInformationGain}')
+
+# select the max value from the gain array
+# this is the new root
+root =  training_set[columnWithMaximumInformationGain]
+print(f'root {root}')   
 
 # prompt user to select either ID3 or Bayes classifier.
 selection = "ID3" #= input("Please enter your selection for either ID3 or Bayes classification: ")
@@ -271,7 +271,7 @@ threshold = 0.9   #= input("Please enter a threshold: ")
 g         = 0.05   #= input("Please enter a value for g: ")
 
 if(selection == "ID3"):
-    ID3(threshold,g)
+    ID3(root,threshold,g)
 
 if(selection == "Bayes"):
     BayesClassifier()
