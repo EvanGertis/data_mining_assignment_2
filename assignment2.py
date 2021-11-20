@@ -32,228 +32,145 @@ def isUnique(s):
     a = s.to_numpy() # s.values (pandas<0.24)
     return (a[0] == a).all()
 
-def ID3(threshold,g):
-    # use the training set to predict the test set.
-    # use the Assignment 2--Training set to extract rules and test the quality of the extracted rules against the Assignment 2-- Test set for ID3.
-    test_set = pd.read_csv("Assignment 2--Test set for ID3.csv")
-    training_set = pd.read_csv("Assignment 2--Training set for ID3.csv")
+def ID3(root,training_set,test_set):
 
-    print('***********************************')
-    print('TRAINING SET')
-    print(training_set)
-    print('***********************************')
+    if(root == ""):
+        # Step 1- Calculate MC (Message Conveyed) for the given data set in reference to the class attribute
+        print(f'Step 1- Calculate MC (Message Conveyed) for the given data set in reference to the class attribute')
+        # MC = -p1*log2(p1) - p2*log2(p2)
+        # For n classes MC = -p1log2(p1) - p2*log2(p2)-...-pn*log2(pn)
 
-
-    print('***********************************')
-    print('TEST SET')
-    print(test_set)
-    print('***********************************')
-
-    print(f'test_set: {test_set}')
-    print(f'training_set: {training_set}')
-
-    # Step 1- Calculate MC (Message Conveyed) for the given data set in reference to the class attribute
-    print(f'Step 1- Calculate MC (Message Conveyed) for the given data set in reference to the class attribute')
-    # MC = -p1*log2(p1) - p2*log2(p2)
-    # For n classes MC = -p1log2(p1) - p2*log2(p2)-...-pn*log2(pn)
-
-    # For each column calculate the gain.
-    numberOfColumns = 0
-    mcDictionary = {}
-    print('***********************************')
-    print('For each column calculate the gain.')
-    for (columnName, columnData) in training_set.iteritems():
-        messageConveyed = mc(columnName,training_set)
-        mcDictionary.update({columnName:round(messageConveyed)})
-        numberOfColumns+=1
-    print('***********************************')
-    print(f'numberOfColumns {numberOfColumns}')
-    print(f'mcDictionary {mcDictionary}')
+        # For each column calculate the gain.
+        numberOfColumns = 0
+        mcDictionary = {}
+        print('***********************************')
+        print('For each column calculate the gain.')
+        for (columnName, columnData) in training_set.iteritems():
+            messageConveyed = mc(columnName,training_set)
+            mcDictionary.update({columnName:round(messageConveyed)})
+            numberOfColumns+=1
+        print('***********************************')
+        print(f'numberOfColumns {numberOfColumns}')
+        print(f'mcDictionary {mcDictionary}')
 
 
-    # The column with the highest gain is the root.
-    print(f'The column with the highest gain is the root.')
-    values = mcDictionary.values()
-    max_value = max(values)
-    print(f'The max value is {max_value}')
-    # print(f'The max value, {max_value}, is associated with column {columnWithMaximumInformationGain}')
-    val_list = list(values)
-    columnWithMaximumInformationGain = list(mcDictionary.keys())[list(mcDictionary.values()).index(max_value)]
-    print(f'The max value, {max_value}, is associated with column {columnWithMaximumInformationGain}')
+        # The column with the highest gain is the root.
+        print(f'The column with the highest gain is the root.')
+        values = mcDictionary.values()
+        max_value = max(values)
+        print(f'The max value is {max_value}')
+        # print(f'The max value, {max_value}, is associated with column {columnWithMaximumInformationGain}')
+        val_list = list(values)
+        columnWithMaximumInformationGain = list(mcDictionary.keys())[list(mcDictionary.values()).index(max_value)]
+        print(f'The max value, {max_value}, is associated with column {columnWithMaximumInformationGain}')
 
-    # select the max value from the gain array
-    # this is the new root
-    root =  columnWithMaximumInformationGain
+        # select the max value from the gain array
+        # this is the new root
+        root =  columnWithMaximumInformationGain
+        print(f'root is {root}')
+        print("******************************************")
+        print("**************   ROOT   ******************")
+        print(f"TF is {root}**********************")
+        print("******************************************")
+        print(f'isUnique = {isUnique(training_set[root])}')
+        if(isUnique(training_set[root])):
+            return   
+    
+    # Step 2 - Repeat for every attribute
+    print(f'Step 2 - Repeat for every attribute')
+    # Loop 1
+    attribute = ""
+    maximum       = 0 
+    for (F, columnData) in training_set.iteritems():
+        print(f'processing attribute {F}')
+        # Loop 2
+        Total = 0
+        uniques = training_set[F].unique()
+        for k in uniques:
+            print(f'processing branch {k} for {F}')
+            # Calculate MC for column
+            messageConveyed = mc(F,training_set)
+
+            # Calculate the weight for F
+            F_D    = training_set[F].count()
+            TF_D   = training_set[root].count()
+
+            weight = F_D/TF_D
+            total = weight*messageConveyed
+        gain = mcDictionary[root] - total
+        if(gain > maximum):
+            attribute = F
+            maximum   = gain 
+        print(f"gain: {gain} for {F}")
+    
+    print(f'attribute {attribute} has the max gain of {gain}')
+    print(f'removing {attribute}')
+    root = attribute
+    print(f'new root {root} has branches {training_set[root].unique()}')
     print(f'root is {root}')
     print("******************************************")
     print("**************   ROOT   ******************")
-    print(f"*****************{root}**********************")
+    print(f"TF is {root}**********************")
     print("******************************************")
-    print(f'isUnique = {isUnique(training_set[root])}')
-    if(isUnique(training_set[root])):
-        return   
+    unique_values = training_set[root].unique()
+    datasets = []
+    for unique_value in unique_values:
+        print(f'processing for file : {unique_value} ')
+        df_1 = training_set[training_set[attribute] > unique_value]
+        df_2 = training_set[training_set[attribute] <  unique_value]
+        datasets.append(df_1)
+        datasets.append(df_2)
+
+    del training_set[attribute]
     
-    # Loop
-    # Step 2 - Repeat for every attribute
-    print(f'Step 2 - Repeat for every attribute')
-    for (columnName, columnData) in training_set.iteritems():
-
-        # # leaf generated from the decision tree.
-        # F1 = training_set[columnName].mode()
-        # print(f'F1 : {F1} leaf generated from the decision tree.')
-
-        # # # define c1 count of records w/ dominant class in F1
-        # # # How do I determine the number of records w/ dominant class in F1?
-        # c1 = training_set[columnName].count()
-
-        # # # alpha = c1/ |F1|
-        # # # F1 is one of the unique values of a given attribute.
-        # alpha = c1/ abs(F1)
-        # print(f'alpha {alpha}')
-        # exit()
-        # # the number of records in the test set that are correctly classified by the rules extracted from the tree before removal.
-        # # How do I determine the number of records in test set that are correctly classified by rules extracted from the tree before removal?
-        # N = 0
-
-        # # the number of records in the test set that are correctly classified by the rules extracted from the tree.
-        # # How do I determine the number of records in the test set that are correctly classified by the rules extracted from the tree?
-        # M = 0
-
-        # # the parameter and 0 <= g <= 0.15
-        # g = 0
-
-        if g < 0 or g > 0.15:
-            exit()
-
-        # k is the total number of branches in the subtree
-        # i) use the atttribute as a node from which k 
-        # k branches are emanating, where k is
-        # the number of unique values in the attribute
-        attribute = columnName
-        k         = training_set[columnName].nunique()
-        print("*****************************************")
-        print("**************** i  *********************")
-        print(f'use the atttribute {columnName} as a node from which {k}')
-        print(f'branches are emanating, where {k} is')
-        print(f'the number of unique values in the attribute')
-
-        uniques = training_set[columnName].unique()
-        for unique_value in uniques:
-            print(f'processing branch for unique_value: {unique_value}')
-            # if alpha > threshold:
-            #     # stop splitting tree
-
-            # ii) split the given data source based on the
-            # unique values in the attribute
-            print("*****************************************")
-            print("**************** ii *********************")
-            print(f'split the given data source based on the')
-            print(f'unique values in the attribute: {columnName}')
-            df1 = training_set[training_set[columnName] >= unique_value]
-            df2 = training_set[training_set[columnName] < unique_value]
-
-            print("**********")
-            print(f"splitting by {unique_value}")
-            print("**********")
-
-            # iii) calculate MC for new splits
-            # calculate MC for each  attribute of Venue
-            print("*****************************************")
-            print("************* iii ***********************")
-            print(f"calculate MC for new splits")
-            print(f"calculate MC for each  attribute of {columnName}")
-            messageConveyed = mc(columnName,training_set)
-            print(f"MC for {columnName} is {messageConveyed}")
-
-            # iv calculate the weight for each split
-            # start with venue
-            print("*****************************************")
-            print("************* iv  ***********************") 
-            print(f"calculate the weight for each split ({columnName})")
-            # Loop 
-            # For each unique value calculate unique_value/total
-            uniques1 = df1[columnName].unique()
-            uniques2 = df2[columnName].unique()
-            total1   = df1[columnName].count()
-            total2   = df2[columnName].count()
-
-            print(f'unique values for branch {unique_value} for attribute {columnName} is {uniques1}') 
-            print(f'unique values for branch {unique_value} for attribute {columnName} is {uniques2}')
-
-
-            print("*****************************************")
-            print("*************  v  ***********************") 
-            print(f"calculate the weighted MC (WMC) for the attribute ({columnName})")
-            print("*****************************************")
-            print("************* weights for df1  ***********")
-            print(f"WMC({columnName})")
-            wmc1 = 0
-            for unique_value in uniques1:
-                weight = unique_value/total1
-                print(f"weight = {unique_value}/{total1}")
-                messageConveyed = mc(columnName,df1)
-                wmc1 += weight*messageConveyed
-                print(f"wmc1 += {weight}*{messageConveyed}")
-
-            # vi) Calculate Gain for the attribute [MC-WMC(venue)]
-            # Gain(venue) = MC-WMC(venue)
-            print("*****************************************")
-            print("*************  vi  **********************") 
-            print(f"Calculate Gain for the {columnName} [{messageConveyed-wmc1}]")
-            gain = messageConveyed-wmc1
-            print(f"wmc1 : {wmc1}")
-            print(f"gain for branch {unique_value} of {columnName} is {gain}")
-
+    # Step 3 - Examine dataset of each leaf
+    print(f'Step 3 - Examine dataset of each leaf')
+    print(f'number of datasets {len(datasets)}')
+    print("*****************")
+    print("printing datasets")
+    print("*****************")
+    splits = {}
+    all_values_same = False
+    for df in datasets:
+        print(f'Step 4 - for {attribute} dataset check is marked "split"')
+        if(df[attribute].is_unique):
+            print(f'all values are the same no split')
+            all_values_same = True
+        else:
+            print(f'values are not unique perform split')
+            all_values_same = False
+            splits.update({"split":df})
         
-
-            # v) calculate the weighted MC (WMC) for the attribute
-            # WMC(venue) = W(1)*MC(1) + W(2)*MC(2)
-            print("*****************************************")
-            print("*************  v  ***********************") 
-            print(f"calculate the weighted MC (WMC) for the attribute ({columnName})")
-            print("*****************************************")
-            print("************* weights for df2  ***********")
-            print(f"WMC({columnName})")
-            wmc2 = 0
-            for unique_value in uniques2:
-                weight = unique_value/total2
-                print(f"weight = {unique_value}/{total2}")
-                messageConveyed = mc(columnName,df2)
-                wmc2 += weight*messageConveyed
-                print(f"wmc2 += {weight}*{messageConveyed}")
-
-            # vi) Calculate Gain for the attribute [MC-WMC(venue)]
-            # Gain(venue) = MC-WMC(venue)
-            print("*****************************************")
-            print("*************  vi  **********************") 
-            print(f"Calculate Gain for the {columnName} [{messageConveyed-wmc2}]")
-            gain = messageConveyed-wmc2
-            print(f"wmc2 : {wmc2}")
-            print(f"gain for branch {unique_value} of {columnName} is {gain}")
+    if(not all_values_same):
+        for split in splits:
+            ID3(root,split.get("split"),test_set)
+    else:
+        ID3(root,training_set,test_set)
             
-            if(columnName == 'color'):
-                exit()
+    print("*****************")
 
-            # # Step 3- Repeat for each split produced by the root
-            # # if all records have the same class then break. 
-            # if(isUnique(df1[columnName])):
-            #     break
-
-            # if(isUnique(df2[columnName])):
-            #     break
-
-            # Step 4- If every split is free of a mixture of class values, then stop
-            # expansion of the tree
-
-            # # How do we apply prepruning to the data?
-            # # For post-pruning use the criteria below
-            # if (N-M)/Q < g*k:
-            #     # remove subtree
-
-            # Step 5- Extract rules in form of if-then-else from the tree
-    ID3(columnName,threshold,g,training_set)
     
-    # calculate_metrics(tp, tn, p, n, fp)
+
+ # use the training set to predict the test set.
+# use the Assignment 2--Training set to extract rules and test the quality of the extracted rules against the Assignment 2-- Test set for ID3.
+test_set = pd.read_csv("Assignment 2--Test set for ID3.csv")
+training_set = pd.read_csv("Assignment 2--Training set for ID3.csv")
+
+print('***********************************')
+print('TRAINING SET')
+print(training_set)
+print('***********************************')
+
+
+print('***********************************')
+print('TEST SET')
+print(test_set)
+print('***********************************')
+
+print(f'test_set: {test_set}')
+print(f'training_set: {training_set}')
+
+    
 
 def BayesClassifier(training_set,test_set):
     # use the assignment 2-- training set for Bayes as the training set to classify the records of the assignment 2 test set for bayes
@@ -270,9 +187,10 @@ selection = "ID3" #= input("Please enter your selection for either ID3 or Bayes 
 threshold = 0.9   #= input("Please enter a threshold: ")
 g         = 0.05   #= input("Please enter a value for g: ")
 
+root = ""
 if(selection == "ID3"):
-    ID3(threshold,g)
+    ID3(root,training_set,test_set)
 
 if(selection == "Bayes"):
-    BayesClassifier()
+    BayesClassifier(training_set,test_set)
 
