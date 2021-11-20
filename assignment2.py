@@ -20,63 +20,146 @@ def calculate_metrics(tp, tn, fn, p, n, fp):
 def display_metrics(accuracy, error_rate, sensitivity, precision, specificity):
     print(f'Accuracy: {accuracy}, Error_rate:{error_rate}, Sensitivity:{sensitivity}, Precision:{precision}, specificity:{specificity}')
 
+def mc(columnName,training_set):
+    column = training_set[columnName]
+    probs = column.value_counts(normalize=True)
+    messageConveyed = -1*np.sum(np.log2(probs)*probs)
+    return messageConveyed
+
 def ID3(threshold,g):
     # use the training set to predict the test set.
     # use the Assignment 2--Training set to extract rules and test the quality of the extracted rules against the Assignment 2-- Test set for ID3.
-    test_set = pd.read_csv("Assignment 2--Test set for ID3.csv", header=None)
-    training_set = pd.read_csv("Assignment 2--Training set for ID3.csv", header=None)
+    test_set = pd.read_csv("Assignment 2--Test set for ID3.csv")
+    training_set = pd.read_csv("Assignment 2--Training set for ID3.csv")
+
+    print('***********************************')
+    print('TRAINING SET')
+    print(training_set)
+    print('***********************************')
+
+
+    print('***********************************')
+    print('TEST SET')
+    print(test_set)
+    print('***********************************')
 
     print(f'test_set: {test_set}')
     print(f'training_set: {training_set}')
 
     # Step 1- Calculate MC (Message Conveyed) for the given data set in reference to the class attribute
+    print(f'Step 1- Calculate MC (Message Conveyed) for the given data set in reference to the class attribute')
     # MC = -p1*log2(p1) - p2*log2(p2)
     # For n classes MC = -p1log2(p1) - p2*log2(p2)-...-pn*log2(pn)
 
-    # For each column
-    # For each row
-    # calculate the probability for an attribute
-
-    for key, value in test_set.iteritems():
-        if (isinstance(key, str)):
-            print(f"Processing {key}")
-        print("********")
-        print(value)
-        print()
-        print("********")
+    # For each column calculate the gain.
+    numberOfColumns = 0
+    mcDictionary = {}
+    print('***********************************')
+    print('For each column calculate the gain.')
+    for (columnName, columnData) in training_set.iteritems():
+        messageConveyed = mc(columnName,training_set)
+        mcDictionary.update({columnName:round(messageConveyed)})
+        numberOfColumns+=1
+    print('***********************************')
+    print(f'numberOfColumns {numberOfColumns}')
+    print(f'mcDictionary {mcDictionary}')
     
-    for key, value in test_set.iteritems():
-        if (isinstance(key, str)):
-            print(f"Processing {key}")
-        print("********")
-        print(value)
-        print()
-        print("********")
-
-
-    # set gain array
+    # The column with the highest gain is the root.
+    print(f'The column with the highest gain is the root.')
+    values = mcDictionary.values()
+    max_value = max(values)
+    print(f'The max value is {max_value}')
+    # print(f'The max value, {max_value}, is associated with column {columnWithMaximumInformationGain}')
+    val_list = list(values)
+    columnWithMaximumInformationGain = list(mcDictionary.keys())[list(mcDictionary.values()).index(max_value)]
+    print(f'The max value, {max_value}, is associated with column {columnWithMaximumInformationGain}')
+    root =  training_set[columnWithMaximumInformationGain]
+    print(f'root {root}')   
 
     # Loop
-        # Step 2 - Repeat for every attribute
+    # Step 2 - Repeat for every attribute
+    print(f'Step 2 - Repeat for every attribute')
+    for (columnName, columnData) in training_set.iteritems():
 
         # i) use the atttribute as a node from which k 
         # k branches are emanating, where k is
         # the number of unique values in the attribute
+        attribute = columnName
+        k         = training_set[columnName].nunique()
+        print("*****************************************")
+        print("**************** i  *********************")
+        print(f'use the atttribute {columnName} as a node from which {k}')
+        print(f'{k} branches are emanating, where {k} is')
+        print(f'the number of unique values in the attribute')
 
         # ii) split the given data source based on the
         # unique values in the attribute
+        print("*****************************************")
+        print("**************** ii *********************")
+        print(f'split the given data source based on the')
+        print(f'unique values in the attribute: {columnName}')
+        df1 = training_set[training_set[columnName] >= k]
+        df2 = training_set[training_set[columnName] < k]
+
+        print("**********")
+        print("splitting ")
+        print(f'df1 {df1}')
+        print(f'df2 {df2}')
+        print("**********")
 
         # iii) calculate MC for new splits
         # calculate MC for each  attribute of Venue
+        print("*****************************************")
+        print("************* iii ***********************")
+        print(f"calculate MC for new splits")
+        print(f"calculate MC for each  attribute of {columnName}")
+        messageConveyed = mc(columnName,training_set)
+        print(f"MC for {columnName} is {messageConveyed}")
 
         # iv calculculate the weight for each split
         # start with venue
-        
+        print("*****************************************")
+        print("************* iv  ***********************") 
+        print(f"calculculate the weight for each split ({columnName})")
+        # Loop 
+        # For each unique value calculate unique_value/total
+        uniques1 = df1[columnName].unique()
+        uniques2 = df2[columnName].unique()
+        total1   = df1.count()
+        total2   = df2.count() 
+
+        print("*****************************************")
+        print("*************  v  ***********************") 
+        print(f"calculate the weighted MC (WMC) for the attribute ({columnName})")
+        print("*****************************************")
+        print("************* weights for df1  ***********")
+        print(f"WMC({columnName})")
+        for unique_value in uniques1:
+            weight = unique_value/total1
+            wmc = weight*mc(columnName,df1)
+            print(f"+= {wmc}")
+
         # v) calculate the weighted MC (WMC) for the attribute
         # WMC(venue) = W(1)*MC(1) + W(2)*MC(2)
-
-        # vi) Calculate Gain for the attribute [MC-WMC(venue)]
-        # Gain(venue) = MC-WMC(venue)
+        print("*****************************************")
+        print("*************  v  ***********************") 
+        print(f"calculate the weighted MC (WMC) for the attribute ({columnName})")
+        print("*****************************************")
+        print("************* weights for df2  ***********")
+        print(f"WMC({columnName})")
+        for unique_value in uniques2:
+            weight = unique_value/total2
+            messageConveyed = mc(columnName,df2)
+            wmc += weight*messageConveyed
+            print(f"+= {wmc}")
+            # vi) Calculate Gain for the attribute [MC-WMC(venue)]
+            # Gain(venue) = MC-WMC(venue)
+            print("*****************************************")
+            print("*************  vi  **********************") 
+            print(f"Calculate Gain for the {columnName} [{messageConveyed-wmc}]")
+            gain = messageConveyed-wmc
+            print(f"gain for {columnName} = {gain}")
+        
 
         # Step 3- Repeat for each split produced by the root
         # if all records have the same class then break. 
@@ -149,9 +232,9 @@ def BayesClassifier():
 
 
 # prompt user to select either ID3 or Bayes classifier.
-selection = input("Please enter your selection for either ID3 or Bayes classification: ")
-threshold = input("Please enter a threshold: ")
-g         = input("Please enter a value for g: ")
+selection = "ID3" #= input("Please enter your selection for either ID3 or Bayes classification: ")
+threshold = 0.9   #= input("Please enter a threshold: ")
+g         = 0.5   #= input("Please enter a value for g: ")
 
 if(selection == "ID3"):
     ID3(threshold,g)
