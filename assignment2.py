@@ -30,17 +30,19 @@ def mc(columnName,training_set):
     # print(f'mc {messageConveyed}')
     return messageConveyed
 
-def isNotUnique(s):
+def isUnique(s):
     a = s.to_numpy() # s.values (pandas<0.24)
-    return not (a[0] == a).all()
+    return (a[0] == a).all()
 
-def BayesClassifier():
-    # use the assignment 2-- training set for Bayes as the training set to classify the records of the assignment 2 test set for bayes
-    test_set = pd.read_csv("Assignment 2--Test set for Bayes.csv")
-    training_set = pd.read_csv("Assignment 2--Training set for Bayes.csv")
-
-def ID3(columnName,threshold,g):
-
+def ID3(root,threshold,g,training_set):
+    print("******************************************")
+    print("**************   ROOT   ******************")
+    print(f"*****************{root}**********************")
+    print("******************************************")
+    print(f'isUnique = {isUnique(training_set[root])}')
+    if(isUnique(training_set[root])):
+        return   
+    
     # Loop
     # Step 2 - Repeat for every attribute
     print(f'Step 2 - Repeat for every attribute')
@@ -112,11 +114,11 @@ def ID3(columnName,threshold,g):
         messageConveyed = mc(columnName,training_set)
         print(f"MC for {columnName} is {messageConveyed}")
 
-        # iv calculculate the weight for each split
+        # iv calculate the weight for each split
         # start with venue
         print("*****************************************")
         print("************* iv  ***********************") 
-        print(f"calculculate the weight for each split ({columnName})")
+        print(f"calculate the weight for each split ({columnName})")
         # Loop 
         # For each unique value calculate unique_value/total
         uniques1 = df1[columnName].unique()
@@ -137,9 +139,10 @@ def ID3(columnName,threshold,g):
         wmc1 = 0
         for unique_value in uniques1:
             weight = unique_value/total1
-            print(f"{weight} = {unique_value}/{total2}")
-            wmc1 = weight*mc(columnName,df1)
-            print(f"+= {wmc1}")
+            print(f"weight = {unique_value}/{total1}")
+            messageConveyed = mc(columnName,df1)
+            wmc1 += weight*messageConveyed
+            print(f"wmc1 += {weight}*{messageConveyed}")
 
         # vi) Calculate Gain for the attribute [MC-WMC(venue)]
         # Gain(venue) = MC-WMC(venue)
@@ -163,32 +166,33 @@ def ID3(columnName,threshold,g):
         wmc2 = 0
         for unique_value in uniques2:
             weight = unique_value/total2
-            print(f"{weight} = {unique_value}/{total2}")
+            print(f"weight = {unique_value}/{total2}")
             messageConveyed = mc(columnName,df2)
             wmc2 += weight*messageConveyed
-            print(f"{wmc2} += {weight}*{messageConveyed}")
+            print(f"wmc2 += {weight}*{messageConveyed}")
 
         # vi) Calculate Gain for the attribute [MC-WMC(venue)]
         # Gain(venue) = MC-WMC(venue)
         print("*****************************************")
         print("*************  vi  **********************") 
         print(f"Calculate Gain for the {columnName} [{messageConveyed-wmc2}]")
-        gain = messageConveyed-wmc1
+        gain = messageConveyed-wmc2
         print(f"wmc2 : {wmc2}")
         print(f"gain for branch 2 of {columnName} is {gain}")
-
-        # Step 3- Repeat for each split produced by the root
-        # if all records have the same class then break. 
-        if(isNotUnique(df1[columnName])):
-            return
-
-        if(isNotUnique(df2[columnName])):
-            return
         
+        if(columnName == 'color'):
+            exit()
+
+        # # Step 3- Repeat for each split produced by the root
+        # # if all records have the same class then break. 
+        # if(isUnique(df1[columnName])):
+        #     break
+
+        # if(isUnique(df2[columnName])):
+        #     break
+
         # Step 4- If every split is free of a mixture of class values, then stop
         # expansion of the tree
-
-        ID3(columnName,threshold,g)
 
         # # How do we apply prepruning to the data?
         # # For post-pruning use the criteria below
@@ -196,20 +200,14 @@ def ID3(columnName,threshold,g):
         #     # remove subtree
 
         # Step 5- Extract rules in form of if-then-else from the tree
+    ID3(columnName,threshold,g,training_set)
     
-    
-    # # true positive
-    # tp = 0 
-    # # true negative
-    # tn = 0
-    # # postive
-    # p  = 0
-    # #  negative
-    # n  = 0
-    # # false positive
-    # fp = 0
-
     # calculate_metrics(tp, tn, p, n, fp)
+
+def BayesClassifier():
+    # use the assignment 2-- training set for Bayes as the training set to classify the records of the assignment 2 test set for bayes
+    test_set = pd.read_csv("Assignment 2--Test set for Bayes.csv")
+    training_set = pd.read_csv("Assignment 2--Training set for Bayes.csv")
 
 
 # use the training set to predict the test set.
@@ -262,8 +260,8 @@ print(f'The max value, {max_value}, is associated with column {columnWithMaximum
 
 # select the max value from the gain array
 # this is the new root
-root =  training_set[columnWithMaximumInformationGain]
-print(f'root {root}')   
+root =  columnWithMaximumInformationGain
+print(f'root is {root}')
 
 # prompt user to select either ID3 or Bayes classifier.
 selection = "ID3" #= input("Please enter your selection for either ID3 or Bayes classification: ")
@@ -271,7 +269,8 @@ threshold = 0.9   #= input("Please enter a threshold: ")
 g         = 0.05   #= input("Please enter a value for g: ")
 
 if(selection == "ID3"):
-    ID3(root,threshold,g)
+    ID3(root,threshold,g,training_set)
 
 if(selection == "Bayes"):
     BayesClassifier()
+
