@@ -34,6 +34,7 @@ def isUnique(s):
 
 def ID3(root,training_set,test_set):
 
+<<<<<<< HEAD
 
     if(root == ""):
         # Step 1- Calculate MC (Message Conveyed) for the given data set in reference to the class attribute
@@ -77,6 +78,48 @@ def ID3(root,training_set,test_set):
         print(f'isUnique = {isUnique(training_set[root])}')
         if(isUnique(training_set[root])):
             return   
+=======
+    mcDictionary = {}
+    # Step 1- Calculate MC (Message Conveyed) for the given data set in reference to the class attribute
+    print(f'Step 1- Calculate MC (Message Conveyed) for the given data set in reference to the class attribute')
+    # MC = -p1*log2(p1) - p2*log2(p2)
+    # For n classes MC = -p1log2(p1) - p2*log2(p2)-...-pn*log2(pn)
+
+    # For each column calculate the gain.
+    numberOfColumns = 0
+    print('***********************************')
+    print('For each column calculate the gain.')
+    for (columnName, columnData) in training_set.iteritems():
+        messageConveyed = mc(columnName,training_set)
+        mcDictionary.update({columnName:round(messageConveyed)})
+        numberOfColumns+=1
+    print('***********************************')
+    print(f'numberOfColumns {numberOfColumns}')
+    print(f'mcDictionary {mcDictionary}')
+
+
+    # The column with the highest gain is the root.
+    print(f'The column with the highest gain is the root.')
+    values = mcDictionary.values()
+    max_value = max(values)
+    print(f'The max value is {max_value}')
+    # print(f'The max value, {max_value}, is associated with column {columnWithMaximumInformationGain}')
+    val_list = list(values)
+    columnWithMaximumInformationGain = list(mcDictionary.keys())[list(mcDictionary.values()).index(max_value)]
+    print(f'The max value, {max_value}, is associated with column {columnWithMaximumInformationGain}')
+
+    # select the max value from the gain array
+    # this is the new root
+    root =  columnWithMaximumInformationGain
+    print(f'root is {root}')
+    print("******************************************")
+    print("**************   ROOT   ******************")
+    print(f"TF is {root}**********************")
+    print("******************************************")
+    print(f'isUnique = {isUnique(training_set[root])}')
+    if(isUnique(training_set[root])):
+        return   
+>>>>>>> fa8afdb6f1bea639e09e81ed89d314dd13a58298
     
     # Step 2 - Repeat for every attribute
     print(f'Step 2 - Repeat for every attribute')
@@ -86,7 +129,7 @@ def ID3(root,training_set,test_set):
     for (F, columnData) in training_set.iteritems():
         print(f'processing attribute {F}')
         # Loop 2
-        Total = 0
+        total = 0
         uniques = training_set[F].unique()
         for k in uniques:
             print(f'processing branch {k} for {F}')
@@ -99,7 +142,7 @@ def ID3(root,training_set,test_set):
 
             weight = F_D/TF_D
             total = weight*messageConveyed
-        gain = mcDictionary[root] - total
+        gain = abs(mc(root,training_set) - total)
         if(gain > maximum):
             attribute = F
             maximum   = gain 
@@ -119,11 +162,9 @@ def ID3(root,training_set,test_set):
     for unique_value in unique_values:
         print(f'processing for file : {unique_value} ')
         df_1 = training_set[training_set[attribute] > unique_value]
-        df_2 = training_set[training_set[attribute] <  unique_value]
         datasets.append(df_1)
-        datasets.append(df_2)
 
-    del training_set[attribute]
+    # del training_set[attribute]
     
     # Step 3 - Examine dataset of each leaf
     print(f'Step 3 - Examine dataset of each leaf')
@@ -131,24 +172,21 @@ def ID3(root,training_set,test_set):
     print("*****************")
     print("printing datasets")
     print("*****************")
-    splits = {}
-    all_values_same = False
+    dataframes = {}
     for df in datasets:
         print(f'Step 4 - for {attribute} dataset check is marked "split"')
         if(df[attribute].is_unique):
             print(f'all values are the same no split')
-            all_values_same = True
         else:
             print(f'values are not unique perform split')
-            all_values_same = False
-            splits.update({"split":df})
+            dataframes.update({attribute:df})
+    print(dataframes)
+    
+    for attribute in dataframes:
+        print(f"processing {attribute}")
+        ID3(root,dataframes[attribute],test_set)
         
-    if(not all_values_same):
-        for split in splits:
-            ID3(root,split.get("split"),test_set)
-    else:
-        ID3(root,training_set,test_set)
-            
+        
     print("*****************")
 
     
