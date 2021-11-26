@@ -34,6 +34,7 @@ def isUnique(s):
 
 def ID3(root,training_set,test_set):
 
+
     if(root == ""):
         # Step 1- Calculate MC (Message Conveyed) for the given data set in reference to the class attribute
         print(f'Step 1- Calculate MC (Message Conveyed) for the given data set in reference to the class attribute')
@@ -52,6 +53,7 @@ def ID3(root,training_set,test_set):
         print('***********************************')
         print(f'numberOfColumns {numberOfColumns}')
         print(f'mcDictionary {mcDictionary}')
+
 
 
         # The column with the highest gain is the root.
@@ -151,24 +153,14 @@ def ID3(root,training_set,test_set):
 
     
 
- # use the training set to predict the test set.
+# use the training set to predict the test set.
 # use the Assignment 2--Training set to extract rules and test the quality of the extracted rules against the Assignment 2-- Test set for ID3.
-test_set = pd.read_csv("Assignment 2--Test set for ID3.csv")
-training_set = pd.read_csv("Assignment 2--Training set for ID3.csv")
-
-print('***********************************')
-print('TRAINING SET')
-print(training_set)
-print('***********************************')
+test_set_ID3 = pd.read_csv("Assignment 2--Test set for ID3.csv")
+training_set_ID3 = pd.read_csv("Assignment 2--Training set for ID3.csv")
 
 
-print('***********************************')
-print('TEST SET')
-print(test_set)
-print('***********************************')
-
-print(f'test_set: {test_set}')
-print(f'training_set: {training_set}')
+test_set_Bayes = pd.read_csv("Assignment 2--Training set for Bayes.csv")
+training_set_Bayes = pd.read_csv("Assignment 2--Test set for Bayes.csv")
 
     
 
@@ -189,8 +181,26 @@ g         = 0.05   #= input("Please enter a value for g: ")
 
 root = ""
 if(selection == "ID3"):
+    print('***********************************')
+    print('TRAINING SET')
+    print(training_set_ID3)
+    print('***********************************')
+    
+    print('***********************************')
+    print('TEST SET')
+    print(test_set_ID3)
+    print('***********************************')
     ID3(root,training_set,test_set)
 
 if(selection == "Bayes"):
-    BayesClassifier(training_set,test_set)
+    print('***********************************')
+    print('TRAINING SET')
+    print(training_set_Bayes)
+    print('***********************************')
+    
+    print('***********************************')
+    print('TEST SET')
+    print(test_set_Bayes)
+    print('***********************************')
+    BayesClassifier(training_set_Bayes,test_set_Bayes)
 
