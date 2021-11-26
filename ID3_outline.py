@@ -2,6 +2,7 @@ from numpy.core.defchararray import count
 import pandas as pd
 import numpy as np
 import numpy as np
+import math
 from math import ceil, floor, log2
 from sklearn.decomposition import PCA
 from numpy import linalg as LA
@@ -11,63 +12,67 @@ from sklearn.naive_bayes import GaussianNB
 
 # Step 1- Calculate MC (Message Conveyed) for the given dataset (let us call it file TF) in reference to  the class attribute 
 # MC(TF) = -p1*log2(p1) - p2*log2(p2) 
-def mc(classAttribute,training_set):
+def mc(classAttribute,attribute,training_set):
     column = training_set[classAttribute]
+
+    if attribute:
+        column = training_set[training_set[classAttribute] == attribute] 
+
     probs = column.value_counts(normalize=True)
     messageConveyed = -1*np.sum(np.log2(probs)*probs)
     return messageConveyed
 
 def wmc(classAttribute,attribute,training_set):
-    attributeCount = training_set[training_set[classAttribute] == attribute].count()
-    total          = training_set[classAttribute].count()
+    attributeCount = len(training_set[training_set[classAttribute] == attribute].index)
+    total          = len(training_set[classAttribute].index)
     print(f'{attributeCount}/{total}')
     return attributeCount/total
 
 
 def ID3(root,training_set,test_set):
+
+    highestGainAttribute = ""
+    highestGainValue     = -math.inf
     for classAttribute, values in training_set.iteritems():
-        messageConveyed = mc(classAttribute, training_set)
+        messageConveyed = mc(classAttribute, attribute=None, training_set=training_set)
         print(f"{classAttribute} mc: {messageConveyed}")
 
         attributes = training_set[classAttribute].unique()
         print(f"{classAttribute}\n")
+        weightedMessageConveyed = 0
         for attribute in attributes:
             weight = wmc(classAttribute, attribute, training_set)
+            messageConveyed = mc(classAttribute, attribute, training_set)
             print(f"wmc({attribute}) = {weight}")
+            weightedMessageConveyed += weight*messageConveyed
 
-# For n classes MC(TF) = -p1log2(p1) - p2*log2(p2)-...-pn*log2(pn) 
-# The probabilities are approximated by relative frequencies. 
-# Step 2- Calculate Gain for every attribute in the training set . 
-# Loop 1:  
- # For each attribute (Aj) Do: 
-# Consider the attribute is a node from which k branches are emanating,  
-# where k is the number of unique values in the attribute  
-# Temporarily, split the file TF into K new files based on the unique values in the  attribute Aj. 
-# Let us call these new files F1, . . ., Fk  
-# Total =0; 
-# Loop 2 
- # for each new file Fi Do: 
-# Calculate MC for the file and call it MC(Fi). 
-# Calculate weight for file Fi and call it Weight(Fi) 
-# Weight(Fi) = |Fi|/|TF| 
-# Calculate the weighted MC (WMC) for file Fi 
-# WMC(Fi) = Weight(Fi) * MC(Fi) 
-# Total = Total + MC(Fi)  
-# End of loop 2 
-# Calculate Gain of Aj 
-# Gain(Aj) = MC(TF) – Total; 
-# End of Loop 1 
-# The attribute with the highest gain is the winner. 
-# Permanently split the file TF into K new files based on the K unique values of the winner  attribute. 
-# Remove the winner attribute from all new K files. 
-# Now you have the root of the tree (the winner attribute) and this tree has k leaves, and  each leaf has its own dataset.  
-# Step 3- Examine dataset of each leaf.  
-# If the attribute class has the same value for all the records in the leaf’s dataset,  then mark the leaf as “no split”  
-# else mark it as “split”.  
-# Step 4- For each leaf’s dataset that is marked “Split” Do. 
-# The dataset become the new TF  
-# TF = leaf’s dataset 
-# Go to Step 1;  
+        print(f'wmc({classAttribute}) = {weightedMessageConveyed}')
+        gain = messageConveyed - weightedMessageConveyed
+        print(f'MC - wmc({classAttribute}) = {messageConveyed} - {weightedMessageConveyed} = {gain}')
+        if gain > highestGainValue:
+            highestGainAttribute = classAttribute
+            highestGainValue     = gain
+    
+    print(f'winner is {highestGainAttribute} with gain of {highestGainValue}')
+    root = highestGainAttribute
+    leaves = training_set[root].unique()
+    splits = {}
+    for leaf in  leaves:
+        print(f'leaf: {leaf} of root: {root}')
+        if training_set[training_set[root] == leaf][root].is_unique:
+            print(f'all of the records for leaf: {leaf} are the same. NO SPLIT')
+            splits.update({leaf:"no split"})
+            return
+        else:
+            print(f'all of the records for leaf: {leaf} are NOT the same. SPLIT')
+            splits.update({leaf:"split"})
+
+    for leaf,split in splits.items():
+        if split == "split":
+            print(f"setting {leaf} as the new dataset")
+            if root in training_set:
+                training_set = training_set[training_set[root] == leaf].drop(columns=root)
+                ID3(root,training_set,test_set)
 
 # use the training set to predict the test set.
 # use the Assignment 2--Training set to extract rules and test the quality of the extracted rules against the Assignment 2-- Test set for ID3.
