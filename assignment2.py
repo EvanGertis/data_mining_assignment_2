@@ -66,7 +66,7 @@ def ID3(root,training_set,test_set, threshold, g):
             return
         else:
             splits.update({leaf:"split"})
-    
+    classValues = None
     for leaf,split in splits.items():
         if root in training_set:
             c1 = len(training_set[training_set[root] == leaf].index)
@@ -91,20 +91,45 @@ training_set_ID3 = pd.read_csv("Assignment 2--Training set for ID3.csv")
 test_set_Bayes = pd.read_csv("Assignment 2--Training set for Bayes.csv")
 training_set_Bayes = pd.read_csv("Assignment 2--Test set for Bayes.csv")
 
-    
+def prob(x, dataset):
+    # calcuulate the probability of the x for the given dataset
+    return
+
+def prob_product(A, dataset, x):
+    # calculate prodcut of each record in the dataset for Ai attrbutes with class = x
+    return 
+
+def prob_continous_value(A, dataset, x):
+    # calcuate the average for all values of A in dataset with class = x
+    # calculate the standard deviation for all values A in dataset with class = x
+    return
+
+def valueIsNotContinuous(A,training_set):
+    # check if value is continuous or not
+    return False
+
 
 def BayesClassifier(training_set,test_set):
-    # use the assignment 2-- training set for Bayes as the training set to classify the records of the assignment 2 test set for bayes
-    X = test_set.values
-    Y = training_set.values
-    clf = GaussianNB()
-    clf.fit(X, Y)
+    classAttribute = 'Volume'
+    for x in training_set[classAttribute].unique():
+        for A, values in training_set.iteritems():
+            p = None
+            prob_product = None
+            if(valueIsNotContinuous(A,training_set)):
+                p = prob(x, training_set)
+                print(f'p({x}) = {p}')
+            else:
+                p = prob_continous_value(A, training_set, x)
+                print(f'p({A}|{x}) = {p}')
+            
+            prob_product = (A,training_set,x)
+
 
 
 
 
 # prompt user to select either ID3 or Bayes classifier.
-selection = "ID3" #= input("Please enter your selection for either ID3 or Bayes classification: ")
+selection = "Bayes" #= input("Please enter your selection for either ID3 or Bayes classification: ")
 threshold = 0.5   #= input("Please enter a threshold: ")
 g         = 0.01   #= input("Please enter a value for g: ")
 
