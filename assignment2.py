@@ -91,41 +91,47 @@ training_set_ID3 = pd.read_csv("Assignment 2--Training set for ID3.csv")
 test_set_Bayes = pd.read_csv("Assignment 2--Training set for Bayes.csv")
 training_set_Bayes = pd.read_csv("Assignment 2--Test set for Bayes.csv")
 
-def prob(x, dataset):
-    # calcuulate the probability of the x for the given dataset
-    return
-
-def prob_product(A, dataset, x):
-    # calculate prodcut of each record in the dataset for Ai attrbutes with class = x
-    return 
-
-def prob_continous_value(A, dataset, x):
+def prob_continous_value(A, v, classAttribute, dataset, x):
     # calcuate the average for all values of A in dataset with class = x
+    a = dataset[dataset[classAttribute] == x][A].mean()
     # calculate the standard deviation for all values A in dataset with class = x
-    return
-
-def valueIsNotContinuous(A,training_set):
-    # check if value is continuous or not
-    return False
-
+    stdev = 1
+    stdev = dataset[dataset[classAttribute] == x][A].std()
+    v = dataset[A].iloc[0]
+    if stdev == 0.0:
+        stdev = 0.00000000000001
+    return (1/(math.sqrt(2*math.pi)*stdev))*math.exp(-((v-a)*(v-a))/(2*stdev*stdev))
 
 def BayesClassifier(training_set,test_set):
     classAttribute = 'Volume'
+    products = []
+    max = -math.inf
+    classWithMaxValue = "" 
     for x in training_set[classAttribute].unique():
+        D = len(training_set[classAttribute].index)
+        d = len(training_set[training_set[classAttribute] == x].index)
+        pClassAttribute = d/D
+        print("********")
+        print(f'Step 1 calculate p({classAttribute}={x})={pClassAttribute}')
+        p = 0
+        probabilitiesProduct = 1
+        print("********")
+        print("Step 2 calculate product of probabilities")
         for A, values in training_set.iteritems():
-            p = None
-            prob_product = None
-            if(valueIsNotContinuous(A,training_set)):
-                p = prob(x, training_set)
-                print(f'p({x}) = {p}')
-            else:
-                p = prob_continous_value(A, training_set, x)
-                print(f'p({A}|{x}) = {p}')
-            
-            prob_product = (A,training_set,x)
-
-
-
+            if not A == classAttribute:
+                v = training_set[A].iloc[0]
+                p = prob_continous_value(A, v, classAttribute, training_set, x)
+                print(f'p({A}={v}|{classAttribute}={x})={p}')
+                probabilitiesProduct *= p
+        print(f"probabilitiesProduct={probabilitiesProduct}")
+        print("********")
+        # products.append(probabilitiesProduct)
+        ptotal = pClassAttribute*probabilitiesProduct
+        print(f'p({classAttribute}={x}|x)={ptotal}')
+        if ptotal > max:
+            max = ptotal
+            classWithMaxValue = x
+        print(f"winner is {classAttribute}={classWithMaxValue}")
 
 
 # prompt user to select either ID3 or Bayes classifier.
