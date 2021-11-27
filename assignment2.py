@@ -35,7 +35,6 @@ def mc(classAttribute,attribute,training_set):
 def wmc(classAttribute,attribute,training_set):
     attributeCount = len(training_set[training_set[classAttribute] == attribute].index)
     total          = len(training_set[classAttribute].index)
-    print(f'{attributeCount}/{total}')
     return attributeCount/total
 
 def ID3(root,training_set,test_set, threshold, g):
@@ -44,36 +43,28 @@ def ID3(root,training_set,test_set, threshold, g):
     highestGainValue     = -math.inf
     for classAttribute, values in training_set.iteritems():
         messageConveyed = mc(classAttribute, attribute=None, training_set=training_set)
-        print(f"{classAttribute} mc: {messageConveyed}")
 
         attributes = training_set[classAttribute].unique()
-        print(f"{classAttribute}\n")
         weightedMessageConveyed = 0
         for attribute in attributes:
             weight = wmc(classAttribute, attribute, training_set)
             messageConveyed = mc(classAttribute, attribute, training_set)
-            print(f"wmc({attribute}) = {weight}")
             weightedMessageConveyed += weight*messageConveyed
 
-        print(f'wmc({classAttribute}) = {weightedMessageConveyed}')
         gain = messageConveyed - weightedMessageConveyed
-        print(f'MC - wmc({classAttribute}) = {messageConveyed} - {weightedMessageConveyed} = {gain}')
         if gain > highestGainValue:
             highestGainAttribute = classAttribute
             highestGainValue     = gain
     
-    print(f'winner is {highestGainAttribute} with gain of {highestGainValue}')
     root = highestGainAttribute
     leaves = training_set[root].unique()
     splits = {}
+    print(f"root {root}")
     for leaf in  leaves:
-        print(f'leaf: {leaf} of root: {root}')
-        if training_set[training_set[root] == leaf][root].is_unique:
-            print(f'all of the records for leaf: {leaf} are the same. NO SPLIT')
+        if training_set[training_set[root] == leaf]["Volume"].is_unique:
             splits.update({leaf:"no split"})
             return
         else:
-            print(f'all of the records for leaf: {leaf} are NOT the same. SPLIT')
             splits.update({leaf:"split"})
     
     for leaf,split in splits.items():
@@ -81,10 +72,13 @@ def ID3(root,training_set,test_set, threshold, g):
             c1 = len(training_set[training_set[root] == leaf].index)
             F1 = len(training_set[root].index)
             alpha = c1/F1
+            print(f"leaf :{leaf} -> ")
             if split == "split" and alpha < threshold:
-                print(f"setting {leaf} as the new dataset")
                 training_set = training_set[training_set[root] == leaf].drop(columns=root)
                 ID3(root,training_set,test_set,threshold,g)
+            else:
+                print(training_set)
+                print("end")
 
     
 
@@ -112,10 +106,13 @@ def BayesClassifier(training_set,test_set):
 # prompt user to select either ID3 or Bayes classifier.
 selection = "ID3" #= input("Please enter your selection for either ID3 or Bayes classification: ")
 threshold = 0.5   #= input("Please enter a threshold: ")
-g         = 0.05   #= input("Please enter a value for g: ")
+g         = 0.01   #= input("Please enter a value for g: ")
 
 root = ""
 if(selection == "ID3"):
+    if g < 0 or g >=0.015:
+        print("g must be between 0<g<0.015")
+        exit()
     ID3(root,training_set_ID3,test_set_ID3, threshold, g)
 
 if(selection == "Bayes"):
