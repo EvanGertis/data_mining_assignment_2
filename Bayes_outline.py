@@ -10,6 +10,19 @@ from sklearn.naive_bayes import GaussianNB
 test_set_Bayes = pd.read_csv("Assignment 2--Training set for Bayes.csv")
 training_set_Bayes = pd.read_csv("Assignment 2--Test set for Bayes.csv")
 
+def calculate_metrics(tp, tn, fn, fp, p, n):
+    # calculate the accuracy, error rate, sensitivity, specificity, and precision for the selected classifier in reference to the corresponding test set.
+    accuracy = tp + tn /(p+n)
+    error_rate = fp + fn /(p + n)
+    sensitivity = tp/ p
+    precision = tp/ (tp+fp)
+    specificity = tn/n
+
+    display_metrics(accuracy, error_rate, sensitivity, precision, specificity)
+
+def display_metrics(accuracy, error_rate, sensitivity, precision, specificity):
+    print(f'Accuracy: {accuracy}, Error_rate:{error_rate}, Sensitivity:{sensitivity}, Precision:{precision}, specificity:{specificity}')
+
 def prob_continous_value(A, v, classAttribute, dataset, x):
     # calcuate the average for all values of A in dataset with class = x
     a = dataset[dataset[classAttribute] == x][A].mean()
@@ -52,6 +65,19 @@ def BayesClassifier(training_set,test_set):
             classWithMaxValue = x
         print(f"winner is {classAttribute}={classWithMaxValue}")
 
+    tp = len(training_set[training_set[classAttribute] == classWithMaxValue].index)
+    fp = len(test_set[test_set[classAttribute] == classWithMaxValue].index)
+    tn = len(training_set[training_set[classAttribute] == classWithMaxValue].index) 
+    fn = len(test_set[test_set[classAttribute] != classWithMaxValue].index)
+    p  = tp + fp
+    n  = tn + fn
+    print(f" \t      \t\t {classWithMaxValue} \t not {classWithMaxValue} \t \t TOTAL")
+    print(f" \t      \t\t  \t  \t \t ")
+    print(f" \t      \t {classWithMaxValue} \t {tp}  \t {fp} \t {p}")
+    print(f" \t not  \t {classWithMaxValue} \t {fn}  \t {tn} \t {n}")
+    print(f" \t total\t\t {tp+fn} \t {fn+tn}  \t {p+n} \t")
+
+    calculate_metrics(tp, tn, fn, fp, p, n)
 
 
 

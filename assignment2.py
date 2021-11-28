@@ -7,8 +7,20 @@ from numpy import linalg as LA
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.naive_bayes import GaussianNB
 
-def calculate_metrics(tp, tn, fn, p, n, fp):
+def calculate_metrics(training_set,test_set,classAttribute,classValue):
     # calculate the accuracy, error rate, sensitivity, specificity, and precision for the selected classifier in reference to the corresponding test set.
+    tp = len(training_set[training_set[classAttribute] == classValue].index)
+    fp = len(test_set[test_set[classAttribute] == classValue].index)
+    tn = len(training_set[training_set[classAttribute] == classValue].index) 
+    fn = len(test_set[test_set[classAttribute] != classValue.index])
+    p  = tp + fp
+    n  = tn + fn
+    print(f" \t      \t\t {classValue} \t not {classValue} \t \t TOTAL")
+    print(f" \t      \t\t  \t  \t \t ")
+    print(f" \t      \t {classValue} \t {tp}  \t {fp} \t {p}")
+    print(f" \t not  \t {classValue} \t {fn}  \t {tn} \t {n}")
+    print(f" \t total\t\t {tp+fn} \t {fn+tn}  \t {p+n} \t")
+
     accuracy = tp + tn /(p+n)
     error_rate = fp + fn /(p + n)
     sensitivity = tp/ p
@@ -133,6 +145,7 @@ def BayesClassifier(training_set,test_set):
             classWithMaxValue = x
         print(f"winner is {classAttribute}={classWithMaxValue}")
 
+    calculate_metrics(training_set,test_set,classAttribute,classWithMaxValue)
 
 # prompt user to select either ID3 or Bayes classifier.
 selection = "Bayes" #= input("Please enter your selection for either ID3 or Bayes classification: ")
