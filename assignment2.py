@@ -65,8 +65,8 @@ def ID3(root,training_set,test_set, threshold, g):
     
     root = highestGainAttribute
     leaves = training_set[root].unique()
+    k      = len(leaves)
     splits = {}
-    print(f"root {root}")
     for leaf in  leaves:
         if training_set[training_set[root] == leaf]["Volume"].is_unique:
             splits.update({leaf:"no split"})
@@ -76,15 +76,23 @@ def ID3(root,training_set,test_set, threshold, g):
     classValues = None
     for leaf,split in splits.items():
         if root in training_set:
+            print(f"if {root}")
             c1 = len(training_set[training_set[root] == leaf].index)
             F1 = len(training_set[root].index)
+            # N = len(test_set[test_set[root] == leaf].index)
+            # Q = len(test_set[root].index)
             alpha = c1/F1
-            print(f"leaf :{leaf} -> ")
+            print(f" == {leaf} THEN ")
             if split == "split" and alpha < threshold:
+                calculate_metrics(training_set,test_set,root,leaf)
                 training_set = training_set[training_set[root] == leaf].drop(columns=root)
+                test_set     = test_set[test_set[root] == leaf].drop(columns=root)
+                # M = len(test_set.index)
+                # if (N-M)/Q < g * k:
+                    # print(f"remove subtree {root}")
                 ID3(root,training_set,test_set,threshold,g)
             else:
-                print("end")
+                print("END")
 
     
 
@@ -142,9 +150,9 @@ def BayesClassifier(training_set,test_set):
     calculate_metrics(training_set,test_set,classAttribute,classWithMaxValue)
 
 # prompt user to select either ID3 or Bayes classifier.
-selection = input("Please enter your selection for either ID3 or Bayes classification: ")
-threshold = float(input("Please enter a threshold: "))
-g         = float(input("Please enter a value for g: "))
+selection = "ID3" #input("Please enter your selection for either ID3 or Bayes classification: ")
+threshold = 0.5   #float(input("Please enter a threshold: "))
+g         = 0.001 #float(input("Please enter a value for g: "))
 
 root = ""
 if(selection == "ID3"):
