@@ -84,7 +84,6 @@ def ID3(root,training_set,test_set, threshold, g):
                 training_set = training_set[training_set[root] == leaf].drop(columns=root)
                 ID3(root,training_set,test_set,threshold,g)
             else:
-                print(training_set)
                 print("end")
 
     
@@ -143,16 +142,13 @@ def BayesClassifier(training_set,test_set):
     calculate_metrics(training_set,test_set,classAttribute,classWithMaxValue)
 
 # prompt user to select either ID3 or Bayes classifier.
-threshold=None
-g=None
 selection = input("Please enter your selection for either ID3 or Bayes classification: ")
-if selection == "ID3":
-    threshold = input("Please enter a threshold: ")
-    g         = input("Please enter a value for g: ")
+threshold = float(input("Please enter a threshold: "))
+g         = float(input("Please enter a value for g: "))
 
 root = ""
 if(selection == "ID3"):
-    if g < 0 or g >=0.015:
+    if (g < 0) or (g >=0.015):
         print("g must be between 0<g<0.015")
         exit()
     ID3(root,training_set_ID3,test_set_ID3, threshold, g)
