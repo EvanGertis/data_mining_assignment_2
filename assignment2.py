@@ -79,17 +79,17 @@ def ID3(root,training_set,test_set, threshold, g):
             print(f"if {root}")
             c1 = len(training_set[training_set[root] == leaf].index)
             F1 = len(training_set[root].index)
-            # N = len(test_set[test_set[root] == leaf].index)
-            # Q = len(test_set[root].index)
+            N = len(test_set[test_set[root] == leaf].index)
+            Q = len(test_set[root].index)
             alpha = c1/F1
             print(f" == {leaf} THEN ")
             if split == "split" and alpha < threshold:
                 calculate_metrics(training_set,test_set,root,leaf)
                 training_set = training_set[training_set[root] == leaf].drop(columns=root)
-                test_set     = test_set[test_set[root] == leaf].drop(columns=root)
-                # M = len(test_set.index)
-                # if (N-M)/Q < g * k:
-                    # print(f"remove subtree {root}")
+                test_set_after_removal     = test_set[test_set[root] == leaf].drop(columns=root)
+                M = len(test_set_after_removal.index)
+                if (N-M)/Q <= g * k:
+                    continue
                 ID3(root,training_set,test_set,threshold,g)
             else:
                 print("END")
@@ -150,12 +150,12 @@ def BayesClassifier(training_set,test_set):
     calculate_metrics(training_set,test_set,classAttribute,classWithMaxValue)
 
 # prompt user to select either ID3 or Bayes classifier.
-selection = "ID3" #input("Please enter your selection for either ID3 or Bayes classification: ")
-threshold = 0.5   #float(input("Please enter a threshold: "))
-g         = 0.001 #float(input("Please enter a value for g: "))
+selection = input("Please enter your selection for either ID3 or Bayes classification: ")
 
 root = ""
 if(selection == "ID3"):
+    threshold = float(input("Please enter a threshold: "))
+    g         = float(input("Please enter a value for g: "))
     if (g < 0) or (g >=0.015):
         print("g must be between 0<g<0.015")
         exit()
