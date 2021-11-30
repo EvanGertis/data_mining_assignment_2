@@ -10,8 +10,20 @@ from sklearn.naive_bayes import GaussianNB
 test_set_Bayes = pd.read_csv("Assignment 2--Training set for Bayes.csv")
 training_set_Bayes = pd.read_csv("Assignment 2--Test set for Bayes.csv")
 
-def calculate_metrics(tp, tn, fn, fp, p, n):
+def calculate_metrics(training_set,test_set,classAttribute,classValue):
     # calculate the accuracy, error rate, sensitivity, specificity, and precision for the selected classifier in reference to the corresponding test set.
+    tp = len(training_set[training_set[classAttribute] == classValue].index)
+    fp = len(test_set[test_set[classAttribute] == classValue].index)
+    tn = len(training_set[training_set[classAttribute] == classValue].index) 
+    fn = len(test_set[test_set[classAttribute] != classValue].index)
+    p  = tp + fp
+    n  = tn + fn
+    print(f" \t      \t\t {classValue} \t not {classValue} \t \t TOTAL")
+    print(f" \t      \t\t  \t  \t \t ")
+    print(f" \t      \t {classValue} \t {tp}  \t {fp} \t {p}")
+    print(f" \t not  \t {classValue} \t {fn}  \t {tn} \t {n}")
+    print(f" \t total\t\t {tp+fn} \t {fn+tn}  \t {p+n} \t")
+
     accuracy = tp + tn /(p+n)
     error_rate = fp + fn /(p + n)
     sensitivity = tp/ p
@@ -64,18 +76,6 @@ def BayesClassifier(training_set,test_set):
             max = ptotal
             classWithMaxValue = x
         print(f"winner is {classAttribute}={classWithMaxValue}")
-
-    tp = len(training_set[training_set[classAttribute] == classWithMaxValue].index)
-    fp = len(test_set[test_set[classAttribute] == classWithMaxValue].index)
-    tn = len(training_set[training_set[classAttribute] == classWithMaxValue].index) 
-    fn = len(test_set[test_set[classAttribute] != classWithMaxValue].index)
-    p  = tp + fp
-    n  = tn + fn
-    print(f" \t      \t\t {classWithMaxValue} \t not {classWithMaxValue} \t \t TOTAL")
-    print(f" \t      \t\t  \t  \t \t ")
-    print(f" \t      \t {classWithMaxValue} \t {tp}  \t {fp} \t {p}")
-    print(f" \t not  \t {classWithMaxValue} \t {fn}  \t {tn} \t {n}")
-    print(f" \t total\t\t {tp+fn} \t {fn+tn}  \t {p+n} \t")
 
     calculate_metrics(tp, tn, fn, fp, p, n)
 

@@ -65,8 +65,9 @@ def ID3(root,training_set,test_set, threshold, g):
     
     root = highestGainAttribute
     leaves = training_set[root].unique()
-    k      = len(leaves)
     splits = {}
+    k = len(leaves)
+    print(f"root {root}")
     for leaf in  leaves:
         if training_set[training_set[root] == leaf]["Volume"].is_unique:
             splits.update({leaf:"no split"})
@@ -76,23 +77,22 @@ def ID3(root,training_set,test_set, threshold, g):
     classValues = None
     for leaf,split in splits.items():
         if root in training_set:
-            print(f"if {root}")
             c1 = len(training_set[training_set[root] == leaf].index)
             F1 = len(training_set[root].index)
             N = len(test_set[test_set[root] == leaf].index)
             Q = len(test_set[root].index)
             alpha = c1/F1
-            print(f" == {leaf} THEN ")
+            print(f"leaf :{leaf} -> ")
             if split == "split" and alpha < threshold:
                 calculate_metrics(training_set,test_set,root,leaf)
                 training_set = training_set[training_set[root] == leaf].drop(columns=root)
-                test_set_after_removal     = test_set[test_set[root] == leaf].drop(columns=root)
-                M = len(test_set_after_removal.index)
-                if (N-M)/Q <= g * k:
+                test_set     = test_set[test_set[root] == leaf].drop(columns=root)
+                M = len(test_set.index)
+                if (N-M)/Q < g * k:
                     continue
                 ID3(root,training_set,test_set,threshold,g)
             else:
-                print("END")
+                print("end")
 
     
 
@@ -155,7 +155,7 @@ selection = input("Please enter your selection for either ID3 or Bayes classific
 root = ""
 if(selection == "ID3"):
     threshold = float(input("Please enter a threshold: "))
-    g         = float(input("Please enter a value for g: "))
+    g         = 0.001#float(input("Please enter a value for g: "))
     if (g < 0) or (g >=0.015):
         print("g must be between 0<g<0.015")
         exit()
@@ -163,4 +163,3 @@ if(selection == "ID3"):
 
 if(selection == "Bayes"):
     BayesClassifier(training_set_Bayes,test_set_Bayes)
-
