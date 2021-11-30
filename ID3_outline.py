@@ -33,6 +33,7 @@ def ID3(root,training_set,test_set):
 
     highestGainAttribute = ""
     highestGainValue     = -math.inf
+    # Step 2- Calculate Gain for every attribute in the training set .
     for classAttribute, values in training_set.iteritems():
         messageConveyed = mc(classAttribute, attribute=None, training_set=training_set)
         print(f"{classAttribute} mc: {messageConveyed}")
@@ -57,6 +58,7 @@ def ID3(root,training_set,test_set):
     root = highestGainAttribute
     leaves = training_set[root].unique()
     splits = {}
+    # Step 3- Examine dataset of each leaf.
     for leaf in  leaves:
         print(f'leaf: {leaf} of root: {root}')
         if training_set[training_set[root] == leaf][root].is_unique:
@@ -66,12 +68,13 @@ def ID3(root,training_set,test_set):
         else:
             print(f'all of the records for leaf: {leaf} are NOT the same. SPLIT')
             splits.update({leaf:"split"})
-
+    # Step 4- For each leaf’s dataset that is marked “Split” Do.
     for leaf,split in splits.items():
         if split == "split":
             print(f"setting {leaf} as the new dataset")
             if root in training_set:
                 training_set = training_set[training_set[root] == leaf].drop(columns=root)
+                # Go to Step 1;
                 ID3(root,training_set,test_set)
 
 # use the training set to predict the test set.

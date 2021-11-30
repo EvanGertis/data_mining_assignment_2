@@ -49,10 +49,13 @@ def ID3(root,training_set,test_set, threshold, g):
     highestGainAttribute = ""
     highestGainValue     = -math.inf
     for classAttribute, values in training_set.iteritems():
+        # Step 1- Calculate MC (Message Conveyed) for the given dataset (let us call it file TF) in reference to  the class attribute 
+        # MC(TF) = -p1*log2(p1) - p2*log2(p2) 
         messageConveyed = mc(classAttribute, attribute=None, training_set=training_set)
 
         attributes = training_set[classAttribute].unique()
         weightedMessageConveyed = 0
+        # Step 2- Calculate Gain for every attribute in the training set .
         for attribute in attributes:
             weight = wmc(classAttribute, attribute, training_set)
             messageConveyed = mc(classAttribute, attribute, training_set)
@@ -66,8 +69,10 @@ def ID3(root,training_set,test_set, threshold, g):
     root = highestGainAttribute
     leaves = training_set[root].unique()
     splits = {}
+    # K is the total number of branches in the subtree
     k = len(leaves)
     print(f"root {root}")
+    # Step 3- Examine dataset of each leaf.
     for leaf in  leaves:
         if training_set[training_set[root] == leaf]["Volume"].is_unique:
             splits.update({leaf:"no split"})
@@ -75,11 +80,14 @@ def ID3(root,training_set,test_set, threshold, g):
         else:
             splits.update({leaf:"split"})
     classValues = None
+    # Step 4- For each leaf’s dataset that is marked “Split” Do.
     for leaf,split in splits.items():
         if root in training_set:
             c1 = len(training_set[training_set[root] == leaf].index)
             F1 = len(training_set[root].index)
+            # N is the number of records in the Test set that are correctly classified by the rules extracted from the tree before removal of a subtree. 
             N = len(test_set[test_set[root] == leaf].index)
+            # Q is the total number of records in the test set
             Q = len(test_set[root].index)
             alpha = c1/F1
             print(f"leaf :{leaf} -> ")
@@ -87,9 +95,12 @@ def ID3(root,training_set,test_set, threshold, g):
                 calculate_metrics(training_set,test_set,root,leaf)
                 training_set = training_set[training_set[root] == leaf].drop(columns=root)
                 test_set     = test_set[test_set[root] == leaf].drop(columns=root)
+                # M is the number of records in the Test set that are correctly classified by the rules extracted from the tree after removal of the subtree.
                 M = len(test_set.index)
+                # If (N-M)/Q  gK, then the subtree can be removed.
                 if (N-M)/Q < g * k:
                     continue
+                # Go to Step 1;
                 ID3(root,training_set,test_set,threshold,g)
             else:
                 print("end")
@@ -139,7 +150,6 @@ def BayesClassifier(training_set,test_set):
                 probabilitiesProduct *= p
         print(f"probabilitiesProduct={probabilitiesProduct}")
         print("********")
-        # products.append(probabilitiesProduct)
         ptotal = pClassAttribute*probabilitiesProduct
         print(f'p({classAttribute}={x}|x)={ptotal}')
         if ptotal > max:
@@ -155,7 +165,7 @@ selection = input("Please enter your selection for either ID3 or Bayes classific
 root = ""
 if(selection == "ID3"):
     threshold = float(input("Please enter a threshold: "))
-    g         = 0.001#float(input("Please enter a value for g: "))
+    g         = float(input("Please enter a value for g: "))
     if (g < 0) or (g >=0.015):
         print("g must be between 0<g<0.015")
         exit()
